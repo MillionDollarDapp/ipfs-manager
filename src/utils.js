@@ -109,7 +109,28 @@ const utils = {
         }
       }
 
-      ddb.getItem(params, function(err) {
+      ddb.getItem(params, function(err, data) {
+        if (err) reject(err)
+
+        if (data.hasOwnProperty('Item')) {
+          resolve(data.Item.value.S)
+        } else {
+          resolve(null)
+        }
+      })
+    })
+  },
+
+  removeVariable (name) {
+    return new Promise((resolve, reject) => {
+      const params = {
+        TableName: config.dynamoDb.table_variables,
+        Key: {
+          name: {'S': name},
+        }
+      }
+
+      ddb.deleteItem(params, function(err) {
         if (err) reject(err)
         resolve()
       })

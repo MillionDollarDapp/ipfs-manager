@@ -35,7 +35,7 @@
 
     "networks": {
       "5777": {
-        "provider": "hws://localhost:7545",
+        "provider": "ws://localhost:8545",
         "fromBlock": "0"
       },
       "1": {
@@ -43,8 +43,8 @@
         "fromBlock": "0"
       },
       "4": {
-        "provider": "wss://rinkeyby.infura.io/ws",
-        "fromBlock": "0"
+        "provider": "wss://rinkyby.infura.io/ws",
+        "fromBlock": "2921676"
       }
     }
   }
