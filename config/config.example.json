@@ -37,15 +37,15 @@
     "networks": {
       "5777": {
         "provider": "ws://localhost:8545",
-        "fromBlock": "0"
+        "dappGenesis": 0
       },
       "1": {
         "provider": "wss://mainnet.infura.io/ws",
-        "fromBlock": "0"
+        "dappGenesis": 0
       },
       "4": {
         "provider": "wss://rinkyby.infura.io/ws",
-        "fromBlock": "2921676"
+        "dappGenesis": 2921676
       }
     }
   }

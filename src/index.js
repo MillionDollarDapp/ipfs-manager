@@ -43,15 +43,16 @@ const app = {
   async watch () {
     try {
       let startBlock = await utils.getVariable('lastEventBlock')
-      startBlock = startBlock ? parseInt(startBlock) + 1 : web3config.fromBlock
-      console.log('begin at block:', startBlock)
+      startBlock = startBlock ? parseInt(startBlock) + 1 : web3config.dappGenesis
+      console.log('begin watching at block:', startBlock)
 
       this.mdapp.events.EditAd({fromBlock: startBlock, toBlock: 'latest'})
         .on('data', async (event) => {
           let r = event.returnValues
           try {
-            let hash = utils.multihash2hash(r.hashFunction, r.digest, r.size, r.storageEngine)
-            await Promise.all([utils.addToIPFS(hash), utils.removeHashFromDynamoDb(hash)])
+            let hash = utils.multihash2hash(r.hashFunction, r.digest)
+            await utils.addToIPFS(hash)
+            utils.removeHashFromDynamoDb(hash)
 
             // If this script was down while multiple events emitted, the execution order is not guaranteed.
             if (event.blockNumber > startBlock) {
@@ -66,7 +67,7 @@ const app = {
           }
         })
         .on('changed', event => {
-          console.log('something changed')
+          console.log('event removed from blockchain:', event)
         })
         .on('error', error => {
           console.error(error)
@@ -90,7 +91,43 @@ const app = {
     try {
       let expired = await utils.getExpiredFiles(config.expireAfterSeconds)
       if (expired.length) {
-        console.log('expired:', expired)
+        let mhs = new Map()
+        let digests =[]
+        for (let i = 0; i < expired.length; i++) {
+          let mh = utils.hash2multihash(expired[i])
+          mhs.set(mh.digest, mh)
+          digests.push(mh.digest)
+        }
+
+        // Double check if those hashes really really aren't mined into blockchain. This can happen if we miss an
+        // EditAd event above (server glitch or whatever).
+        // Look for EditAd events with the expired multihashes.
+        this.mdapp.getPastEvents('EditAd', {
+          filter: {digest: digests},
+          fromBlock: web3config.dappGenesis,
+          toBlock: 'latest'
+        })
+        .then(async (events) => {
+          // We found events with equal digest. Do hashFunction and size also fit?
+          for (let i = 0; i < events.length; i++) {
+            let r = events[i].returnValues
+            let mh = mhs.get(r.digest)
+
+            let hash = utils.multihash2hash(mh.hashFunction, mh.digest)
+            if (r.hashFunction === mh.hashFunction && parseInt(r.size) === mh.size) {
+              // Phew! This file must not be deleted.
+              console.log('do not delete:', hash)
+              await utils.addToIPFS(hash)
+              utils.removeHashFromDynamoDb(hash)
+              utils.removeFromUploadDir(hash)
+            } else {
+              console.log('delete:', hash)
+              utils.removeHashFromDynamoDb(hash)
+              utils.removeFromS3(hash)
+              utils.removeFromUploadDir(hash)
+            }
+          }
+        })
       }
     } catch (e) {
       console.error(e)
@@ -100,10 +137,3 @@ const app = {
 }
 
 app.start()
-
-// TODO:
-// Mark file as deletable from S3 and disk if Date.now() - timestamp > x hours (check every x min)
-// If expired: look for events containing the digest (index it in solidity!). If it appears in ANY event, we must pin
-// the file, otherwise drop it.
-
-

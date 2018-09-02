@@ -93,22 +93,18 @@ const utils = {
     })
   },
 
-  markHashExpired (hash) {
+  removeFromS3 (hash) {
     return new Promise((resolve, reject) => {
-      const params = {
-        TableName: config.dynamoDb.table_files,
-        Key: {
-          'hash': {'S': hash}
-        },
-        AttributeUpdates: {
-          'expired': {
-            Action: 'PUT',
-            Value: {'BOOL': true}
-          }
-        }
+      let params = {
+        Bucket: config.s3.bucket,
+        Key: hash
       }
 
-      ddb.updateItem(params, function(err) {
+      let s3config = config.s3.all
+      if (config.env === "dev") s3config.endpoint = config.s3.dev.endpoint
+
+      let s3 = new AWS.S3(s3config);
+      s3.deleteObject(params, function (err) {
         if (err) reject(err)
         resolve()
       })
@@ -171,16 +167,19 @@ const utils = {
     })
   },
 
-  multihash2hash (hashFunction, digest, size, storageEngine) {
-    storageEngine = web3.utils.hexToAscii(storageEngine)
+  multihash2hash (hashFunction, digest) {
+    hashFunction = hashFunction.substr(2)
+    digest = digest.substr(2)
+    return multihashes.toB58String(multihashes.fromHexString(hashFunction + digest))
+  },
 
-    if (storageEngine === 'ipfs') {
-      hashFunction = hashFunction.substr(2)
-      digest = digest.substr(2)
-      return multihashes.toB58String(multihashes.fromHexString(hashFunction + digest))
+  hash2multihash (hash) {
+    let mh = multihashes.fromB58String(Buffer.from(hash))
+    return {
+      hashFunction: '0x' + mh.slice(0, 2).toString('hex'),
+      digest: '0x' + mh.slice(2).toString('hex'),
+      size: mh.length - 2
     }
-
-    throw new Error('Unknown storage engine:', storageEngine)
   }
 }
 
