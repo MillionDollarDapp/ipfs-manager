@@ -12,6 +12,7 @@ const app = {
     this.initWeb3()
     this.mdapp = new this.web3.eth.Contract(MDAPPArtifact.abi, MDAPPArtifact.networks[config.web3.network].address)
     this.maintainConnection()
+    this.findExpiredFiles()
   },
 
   initWeb3 () {
@@ -83,6 +84,18 @@ const app = {
       await this.web3.eth.net.isListening()
     } catch (e) {}
     setTimeout(() => { this.maintainConnection() }, 10000)
+  },
+
+  async findExpiredFiles () {
+    try {
+      let expired = await utils.getExpiredFiles(config.expireAfterSeconds)
+      if (expired.length) {
+        console.log('expired:', expired)
+      }
+    } catch (e) {
+      console.error(e)
+    }
+    setTimeout(() => { this.findExpiredFiles() }, 5000)
   }
 }
 
@@ -90,5 +103,7 @@ app.start()
 
 // TODO:
 // Mark file as deletable from S3 and disk if Date.now() - timestamp > x hours (check every x min)
+// If expired: look for events containing the digest (index it in solidity!). If it appears in ANY event, we must pin
+// the file, otherwise drop it.
 
 

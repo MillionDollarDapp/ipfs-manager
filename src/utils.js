@@ -59,6 +59,40 @@ const utils = {
     })
   },
 
+  getExpiredFiles (ttl) {
+    return new Promise((resolve, reject) => {
+      let beforeTimestamp = Math.floor(Date.now() / 1000) - ttl
+
+      const params = {
+        TableName: config.dynamoDb.table_files,
+        IndexName: 'uploaded-index',
+        FilterExpression: '#uploaded <= :value',
+        ExpressionAttributeNames: {
+          '#uploaded': 'uploaded'
+        },
+        ExpressionAttributeValues: {
+          ':value': { 'N': beforeTimestamp.toString()}
+        },
+        Select: 'ALL_PROJECTED_ATTRIBUTES',
+        ReturnConsumedCapacity: 'NONE'
+      }
+
+      ddb.scan(params, function(err, data) {
+        if (err) reject(err)
+
+        if (data && data.hasOwnProperty('Items')) {
+          let items = []
+          data.Items.forEach(item => {
+            items.push(item.hash.S)
+          })
+          resolve(items)
+        } else {
+          resolve(null)
+        }
+      })
+    })
+  },
+
   markHashExpired (hash) {
     return new Promise((resolve, reject) => {
       const params = {

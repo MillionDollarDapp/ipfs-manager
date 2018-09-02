@@ -1,6 +1,7 @@
 {
   "env": "dev",
   "uploadDir": "/home/ubuntu/uploads",
+  "expireAfterSeconds": 43200,
 
   "aws": {
     "dev": {
