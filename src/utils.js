@@ -22,11 +22,13 @@ const utils = {
       let path = `${config.uploadDir}/${hash}`
       if (fs.existsSync(path)) {
         // Add to ipfs
-        let stream = fs.createReadStream(path)
-        ipfs.files.add(stream, function (err, files) {
+        fs.readFile(path, (err, data) => {
           if (err) reject(err)
-          if (files[0].hash !== hash) reject(new Error(`Wrong hash: ${path} now has ${files[0].hash}`))
-          resolve()
+          ipfs.files.add(data, function (err, files) {
+            if (err) reject(err)
+            if (files[0].hash !== hash) reject(new Error(`Wrong hash: ${path} now has ${files[0].hash}`))
+            resolve()
+          })
         })
       } else {
         reject(new Error(`File ${path} doesn't exist.`))
