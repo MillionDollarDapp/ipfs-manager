@@ -1,0 +1,51 @@
+{
+  "env": "dev",
+  "uploadDir": "/home/ubuntu/uploads",
+
+  "aws": {
+    "dev": {
+      "region": "local",
+      "endpoint": "http://localhost:8000"
+    },
+    "live": {
+      "region": "eu-central-1"
+    }
+  },
+
+  "dynamoDb": {
+    "table_files": "Files",
+    "table_variables": "Variables",
+    "all": {
+      "apiVersion": "2012-10-08"
+    }
+  },
+
+  "s3": {
+    "bucket": "bucket-name",
+    "all": {
+      "apiVersion": "2006-03-01"
+    },
+    "dev": {
+      "endpoint": "http://localhost:4567"
+    }
+  },
+
+  "web3": {
+    "network": "5777",
+
+    "networks": {
+      "5777": {
+        "provider": "hws://localhost:7545",
+        "fromBlock": "0"
+      },
+      "1": {
+        "provider": "wss://mainnet.infura.io/ws",
+        "fromBlock": "0"
+      },
+      "4": {
+        "provider": "wss://rinkeyby.infura.io/ws",
+        "fromBlock": "0"
+      }
+    }
+  }
+}

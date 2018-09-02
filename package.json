@@ -1,0 +1,28 @@
+{
+  "name": "ipfs-manager",
+  "version": "1.0.0",
+  "description": "Listens for Ethereum events to either add files (collected by ipfs-proxy) to IPFS or remove them completely from disk and S3 after they expired.",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "nodemon src/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MillionDollarDapp/ipfs-manager.git"
+  },
+  "author": "Patrick Stürmlinger <patrick@mindf.org>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/MillionDollarDapp/ipfs-manager/issues"
+  },
+  "homepage": "https://github.com/MillionDollarDapp/ipfs-manager#readme",
+  "dependencies": {
+    "aws-sdk": "^2.307.0",
+    "ipfs-api": "^24.0.1",
+    "multihashes": "^0.4.14",
+    "web3": "^1.0.0-beta.35"
+  },
+  "devDependencies": {
+    "nodemon": "^1.18.4"
+  }
+}
