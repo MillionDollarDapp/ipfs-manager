@@ -109,23 +109,27 @@ const app = {
         })
         .then(async (events) => {
           // We found events with equal digest. Do hashFunction and size also fit?
-          for (let i = 0; i < events.length; i++) {
-            let r = events[i].returnValues
-            let mh = mhs.get(r.digest)
+          try {
+            for (let i = 0; i < events.length; i++) {
+              let r = events[i].returnValues
+              let mh = mhs.get(r.digest)
 
-            let hash = utils.multihash2hash(mh.hashFunction, mh.digest)
-            if (r.hashFunction === mh.hashFunction && parseInt(r.size) === mh.size) {
-              // Phew! This file must not be deleted.
-              console.log('do not delete:', hash)
-              await utils.addToIPFS(hash)
-              utils.removeHashFromDynamoDb(hash)
-              utils.removeFromUploadDir(hash)
-            } else {
-              console.log('delete:', hash)
-              utils.removeHashFromDynamoDb(hash)
-              utils.removeFromS3(hash)
-              utils.removeFromUploadDir(hash)
+              let hash = utils.multihash2hash(mh.hashFunction, mh.digest)
+              if (r.hashFunction === mh.hashFunction && parseInt(r.size) === mh.size) {
+                // Phew! This file must not be deleted.
+                console.log('do not delete:', hash)
+                await utils.addToIPFS(hash)
+                utils.removeHashFromDynamoDb(hash)
+                utils.removeFromUploadDir(hash)
+              } else {
+                console.log('delete:', hash)
+                utils.removeHashFromDynamoDb(hash)
+                utils.removeFromS3(hash)
+                utils.removeFromUploadDir(hash)
+              }
             }
+          } catch (e) {
+            console.error(e)
           }
         })
       }
