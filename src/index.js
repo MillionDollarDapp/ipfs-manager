@@ -42,7 +42,7 @@ const app = {
   async watch () {
     try {
       let startBlock = await utils.getVariable('lastEventBlock')
-      startBlock = startBlock ? parseInt(startBlock) + 1 : parseInt(web3config.fromBlock)
+      startBlock = startBlock ? parseInt(startBlock) + 1 : web3config.fromBlock
       console.log('begin at block:', startBlock)
 
       this.mdapp.events.EditAd({fromBlock: startBlock, toBlock: 'latest'})
