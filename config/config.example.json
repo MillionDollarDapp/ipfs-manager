@@ -44,7 +44,7 @@
         "dappGenesis": 0
       },
       "4": {
-        "provider": "wss://rinkyby.infura.io/ws",
+        "provider": "wss://rinkeby.infura.io/ws",
         "dappGenesis": 2921676
       }
     }
