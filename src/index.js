@@ -11,7 +11,7 @@ const app = {
   start () {
     this.initWeb3()
     this.maintainConnection()
-    this.findExpiredFiles()
+    this.findOrphanedFiles()
   },
 
   initWeb3 () {
@@ -92,7 +92,7 @@ const app = {
     setTimeout(() => { this.maintainConnection() }, 20000)
   },
 
-  async findExpiredFiles () {
+  async findOrphanedFiles () {
     if (this.isConnected) {
       try {
         let expired = await utils.getExpiredFiles(config.expireAfterSeconds)
@@ -120,30 +120,39 @@ const app = {
                 let r = events[i].returnValues
                 let mh = mhs.get(r.digest)
 
-                let hash = utils.multihash2hash(mh.hashFunction, mh.digest)
                 if (r.hashFunction === mh.hashFunction && parseInt(r.size) === mh.size) {
-                  // Phew! This file must not be deleted.
+                  // Phew! This file MUST NOT be deleted.
                   console.log('do not delete:', hash)
+
+                  // Move file to save harbour
+                  let hash = utils.multihash2hash(mh.hashFunction, mh.digest)
                   await utils.addToIPFS(hash)
                   utils.removeHashFromDynamoDb(hash)
                   utils.removeFromUploadDir(hash)
-                } else {
-                  console.log('delete:', hash)
-                  utils.removeHashFromDynamoDb(hash)
-                  utils.removeFromS3(hash)
-                  utils.removeFromUploadDir(hash)
+
+                  // Remove from multihash map
+                  mhs.delete(mh.digest)
                 }
               }
             } catch (e) {
               console.error(e)
             }
           })
+
+          // All remaining multihashes can be deleted.
+          mhs.forEach(mh => {
+            let hash = utils.multihash2hash((mh.hashFunction, mh.digest))
+            console.log('delete:', hash)
+            utils.removeHashFromDynamoDb(hash)
+            utils.removeFromS3(hash)
+            utils.removeFromUploadDir(hash)
+          })
         }
       } catch (e) {
         console.error(e)
       }
     }
-    setTimeout(() => { this.findExpiredFiles() }, 5000)
+    setTimeout(() => { this.findOrphanedFiles() }, 5000)
   }
 }
 
