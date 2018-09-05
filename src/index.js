@@ -141,7 +141,7 @@ const app = {
 
           // All remaining multihashes can be deleted.
           mhs.forEach(mh => {
-            let hash = utils.multihash2hash((mh.hashFunction, mh.digest))
+            let hash = utils.multihash2hash(mh.hashFunction, mh.digest)
             console.log('delete:', hash)
             utils.removeHashFromDynamoDb(hash)
             utils.removeFromS3(hash)
