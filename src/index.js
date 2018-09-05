@@ -152,7 +152,9 @@ const app = {
         console.error(e)
       }
     }
-    setTimeout(() => { this.findOrphanedFiles() }, 5000)
+
+    // Check every 5min.
+    setTimeout(() => { this.findOrphanedFiles() }, 300000)
   }
 }
 
