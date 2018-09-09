@@ -7,6 +7,7 @@ const Web3 = require('web3')
 
 const app = {
   isConnected: false,
+  _editAdFilter: null,
 
   start () {
     this.initWeb3()
@@ -43,14 +44,19 @@ const app = {
 
   async watch () {
     if (this.isConnected) {
+      if (this._editAdFilter) {
+        this._editAdFilter.unsubscribe()
+      }
+
       try {
         let startBlock = await utils.getVariable('lastEventBlock')
         startBlock = startBlock ? parseInt(startBlock) + 1 : web3config.dappGenesis
         console.log('begin watching at block:', startBlock)
 
-        this.mdapp.events.EditAd({fromBlock: startBlock, toBlock: 'latest'})
+        this._editAdFilter = this.mdapp.events.EditAd({fromBlock: startBlock, toBlock: 'latest'})
           .on('data', async (event) => {
             let r = event.returnValues
+
             try {
               let hash = utils.multihash2hash(r.hashFunction, r.digest)
               await utils.addToIPFS(hash)
