@@ -17,12 +17,12 @@
   },
   "homepage": "https://github.com/MillionDollarDapp/ipfs-manager#readme",
   "dependencies": {
-    "aws-sdk": "^2.307.0",
-    "ipfs-api": "^24.0.1",
+    "aws-sdk": "^2.453.0",
+    "ipfs-http-client": "^30.1.4",
     "multihashes": "^0.4.14",
-    "web3": "^1.0.0-beta.35"
+    "web3": "^1.0.0-beta.55"
   },
   "devDependencies": {
-    "nodemon": "^1.18.4"
+    "nodemon": "^1.19.0"
   }
 }

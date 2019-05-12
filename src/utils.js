@@ -1,8 +1,6 @@
 const config = require('../config/config')
 const fs = require('fs')
 const multihashes = require('multihashes')
-const Web3 = require('web3')
-const web3 = new Web3() // No provider needed here
 
 const AWS = require('aws-sdk')
 if (config.env === "dev") {
@@ -13,8 +11,8 @@ if (config.env === "dev") {
 
 const ddb = new AWS.DynamoDB(config.dynamoDb.all)
 
-const ipfsAPI = require('ipfs-api')
-const ipfs = ipfsAPI()
+const ipfsClient = require('ipfs-http-client')
+const ipfs = ipfsClient()
 
 const utils = {
   addToIPFS (hash) {
@@ -24,7 +22,7 @@ const utils = {
         // Add to ipfs
         fs.readFile(path, (err, data) => {
           if (err) reject(err)
-          ipfs.files.add(data, function (err, files) {
+          ipfs.add(data, function (err, files) {
             if (err) reject(err)
             if (files[0].hash !== hash) reject(new Error(`Wrong hash: ${path} now has ${files[0].hash}`))
             resolve()
